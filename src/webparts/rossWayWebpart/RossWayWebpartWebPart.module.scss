@@ -26,6 +26,13 @@
     color:white;
 }
 
+.tdblue {
+    border-radius: 10px;
+    background: blue;
+    padding: 10px;
+    color:white;
+}
+
   .row {
     @include ms-Grid-row;
     @include ms-fontColor-white;
