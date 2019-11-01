@@ -118,45 +118,47 @@ export default class RossWayWebpartWebPart extends BaseClientSideWebPart<IRossWa
                     if (item.Title === "Documents") return true;
                 })[0].Id;
 
-                this.fetchLists(this.context.pageContext.web.absoluteUrl + "/_api/Web/Lists(guid'b28e0d0a-548b-4fbc-95f8-fac3b3b44029')/Items?$select=FSObjType,EncodedAbsUrl,FileRef,Id,Deliverables,Phase,Status1&$filter=startswith(FileRef, '/sites/RossManagement/Delte dokumenter/" + this.properties.project + "/')")// /Projekt 11 Demo')")
+                this.fetchLists(this.context.pageContext.web.absoluteUrl + "/_api/Web/Lists(guid'b28e0d0a-548b-4fbc-95f8-fac3b3b44029')/Items?$select=FSObjType,EncodedAbsUrl,FileRef,Id,Deliverables,Phase,Status1,RossWay&$filter=startswith(FileRef, '/sites/RossManagement/Delte dokumenter/" + this.properties.project + "/')")// /Projekt 11 Demo')")
                     .then((response2) => {
                         let color: number[][] = [[0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0]];
                         let col: number;
                         let row: number;
 
-                        let htmlUncategorized: string = "<BR><H2>Uncategorized Docuements</H2><TABLE><TR><TD>Title</TD><TD>Deliverables</TD><TD>Phase</TD><TD>Status1</TD></TR>";
+                        let htmlUncategorized: string = "<BR><H2>RossWay Uncategorized Docuements</H2><TABLE><TR><TD><B>Title</B></TD><TD><B>Deliverables</B></TD><TD><B>Phase</B></TD><TD><B>Status1<B></TD></TR>";
                         response2.value.map((list) => {
-                            if (list.FSObjType === 0) {
-                                col = -1;
-                                if (list.Phase === Phases.Initialization) col = 0;
-                                else if (list.Phase === Phases.BasisDesign) col = 1;
-                                else if (list.Phase === Phases.ChallengeDesign) col = 2;
-                                else if (list.Phase === Phases.DetailledPlanning) col = 3;
-                                else if (list.Phase === Phases.DesignOptimization) col = 4;
-                                else if (list.Phase === Phases.FinalDesign) col = 5;
-                                else if (list.Phase === Phases.Execution) col = 6;
-                                else if (list.Phase === Phases.Learning) col = 7;
+                            if (list.RossWay === "Yes") {
+                                if (list.FSObjType === 0) {
+                                    col = -1;
+                                    if (list.Phase === Phases.Initialization) col = 0;
+                                    else if (list.Phase === Phases.BasisDesign) col = 1;
+                                    else if (list.Phase === Phases.ChallengeDesign) col = 2;
+                                    else if (list.Phase === Phases.DetailledPlanning) col = 3;
+                                    else if (list.Phase === Phases.DesignOptimization) col = 4;
+                                    else if (list.Phase === Phases.FinalDesign) col = 5;
+                                    else if (list.Phase === Phases.Execution) col = 6;
+                                    else if (list.Phase === Phases.Learning) col = 7;
 
-                                row = -1;
-                                if (list.Deliverables === Deliverables.BorePlanning) row = 0;
-                                else if (list.Deliverables === Deliverables.ContinuousTasks) row = 1;
-                                else if (list.Deliverables === Deliverables.Milestones) row = 2;
-                                else if (list.Deliverables === Deliverables.FormalRequirements) row = 3;
-                                else if (list.Deliverables === Deliverables.OfficialApprovements) row = 4;
+                                    row = -1;
+                                    if (list.Deliverables === Deliverables.BorePlanning) row = 0;
+                                    else if (list.Deliverables === Deliverables.ContinuousTasks) row = 1;
+                                    else if (list.Deliverables === Deliverables.Milestones) row = 2;
+                                    else if (list.Deliverables === Deliverables.FormalRequirements) row = 3;
+                                    else if (list.Deliverables === Deliverables.OfficialApprovements) row = 4;
 
-                                if (row !== -1 && col !== -1 && (list.Status1 === Status.Notstarted || list.Status1 === Status.Approved)) {
-                                    if (color[row][col] === 0) {
-                                        if (list.Status1 === Status.Notstarted) color[row][col] = 1;
-                                        else if (list.Status1 === Status.Approved) color[row][col] = 2;
+                                    if (row !== -1 && col !== -1 && (list.Status1 === Status.Notstarted || list.Status1 === Status.Approved)) {
+                                        if (color[row][col] === 0) {
+                                            if (list.Status1 === Status.Notstarted) color[row][col] = 1;
+                                            else if (list.Status1 === Status.Approved) color[row][col] = 2;
+                                        }
+                                        else if (color[row][col] === 1) {
+                                            if (list.Status1 === Status.Approved) color[row][col] = 3;
+                                        }
+                                        else if (color[row][col] === 2) {
+                                            if (list.Status1 === Status.Notstarted) color[row][col] = 3;
+                                        }
+                                    } else {
+                                        htmlUncategorized += `<TR><TD><a href="${list.EncodedAbsUrl}">${list.FileRef.substr(list.FileRef.lastIndexOf('/') + 1)}</a></TD><TD>${list.Deliverables}</TD><TD>${list.Phase}</TD><TD>${list.Status1}</TD></TR>`;
                                     }
-                                    else if (color[row][col] === 1) {
-                                        if (list.Status1 === Status.Approved) color[row][col] = 3;
-                                    }
-                                    else if (color[row][col] === 2) {
-                                        if (list.Status1 === Status.Notstarted) color[row][col] = 3;
-                                    }
-                                } else {
-                                    htmlUncategorized += `<TR><TD><a href="${list.EncodedAbsUrl}">${list.FileRef.substr(list.FileRef.lastIndexOf('/') + 1)}</a></TD><TD>${list.Deliverables}</TD><TD>${list.Phase}</TD><TD>${list.Status1}</TD></TR>`;
                                 }
                             }
                         });
@@ -403,8 +405,8 @@ export default class RossWayWebpartWebPart extends BaseClientSideWebPart<IRossWa
         </div>
       </div>`;
 
-        this.domElement.innerHTML = `<div class="${styles.rossWayWebpart}"><div id="spListItemContainer"></div></div>`;
-        //this._renderListAsync();
+        this.domElement.innerHTML = `<div class="${styles.rossWayWebpart}"><div id="spListItemContainer"></div><div id="spListContainer"></div></div>`;
+        this._renderListAsync();
         //this._renderListDataAsync();
         this._renderListDocumentAsync();
     }
