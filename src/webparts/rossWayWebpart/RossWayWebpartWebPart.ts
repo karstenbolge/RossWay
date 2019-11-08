@@ -8,7 +8,7 @@ import {
 
 import styles from './RossWayWebpartWebPart.module.scss';
 import * as strings from 'RossWayWebpartWebPartStrings';
-import { SPHttpClient, SPHttpClientResponse, ISPHttpClientOptions } from "@microsoft/sp-http";
+import { SPHttpClient, SPHttpClientResponse } from "@microsoft/sp-http";
 import { IPropertyPaneDropdownOption } from '@microsoft/sp-property-pane';
 
 export interface IRossWayWebpartWebPartProps {
@@ -40,7 +40,7 @@ enum Deliverables {
     OfficialApprovements = "Official Approvements",
 }
 
-enum Status {
+enum RossStatus {
     Notstarted = "Not started",
     Approved = "Approved",
 }
@@ -59,7 +59,7 @@ export default class RossWayWebpartWebPart extends BaseClientSideWebPart<IRossWa
     }
 
     private async fetchProjects(): Promise<IPropertyPaneDropdownOption[]> {
-        const response = await this.fetchLists(this.context.pageContext.web.absoluteUrl + "/_api/Web/Lists(guid'" + this.documentsGuid + "')/Items?$select=*,EncodedAbsUrl,FileRef,Id,Deliverables,Phase,Status1&$filter=FSObjType eq 1");
+        const response = await this.fetchLists(this.context.pageContext.web.absoluteUrl + "/_api/Web/Lists(guid'" + this.documentsGuid + "')/Items?$select=*,EncodedAbsUrl,FileRef,Id,Deliverables,Phase&$filter=FSObjType eq 1");
         var options: Array<IPropertyPaneDropdownOption> = new Array<IPropertyPaneDropdownOption>();
         response.value.map((list: ISPProject) => {
             options.push({ key: list.FileRef.substr(list.FileRef.lastIndexOf('/') + 1), text: list.FileRef.substr(list.FileRef.lastIndexOf('/') + 1) });
@@ -74,47 +74,56 @@ export default class RossWayWebpartWebPart extends BaseClientSideWebPart<IRossWa
                     if (item.Title === "Documents") return true;
                 })[0].Id;
 
-                this.fetchLists(this.context.pageContext.web.absoluteUrl + "/_api/Web/Lists(guid'" + this.documentsGuid + "')/Items?$select=FSObjType,EncodedAbsUrl,FileRef,Id,Deliverables,Phase,Status1,RossWay&$filter=startswith(FileRef, '/sites/RossManagement/Delte dokumenter/" + this.properties.project + "/')")// /Projekt 11 Demo')")
+                if (!this.properties.project) {
+                    this.domElement.querySelector("#spRossWay").innerHTML = "<H2>No project selected.</H2>";
+                    return;
+                }
+
+                this.fetchLists(this.context.pageContext.web.absoluteUrl + "/_api/Web/Lists(guid'" + this.documentsGuid + "')/Items?$select=FSObjType,EncodedAbsUrl,FileRef,Id,Deliverables,Phase,RossStatus,RossWay&$filter=startswith(FileRef, '/sites/RossManagement/Delte dokumenter/" + this.properties.project + "/') and (RossWay eq 'Yes')")
                     .then((response2) => {
+                        if (response2.error) {
+                            this.domElement.querySelector("#spRossWay").innerHTML = "<i>" + response2.error.message + "</I>";
+                            return;
+                        }
+
                         let color: number[][] = [[0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0]];
                         let col: number;
                         let row: number;
 
-                        let htmlUncategorized: string = "<BR><H2>RossWay Uncategorized Docuements</H2><TABLE><TR><TD><B>Title</B></TD><TD><B>Deliverables</B></TD><TD><B>Phase</B></TD><TD><B>Status1<B></TD></TR>";
+                        let htmlUncategorized: string = "<BR><H2>RossWay Uncategorized Docuements</H2><TABLE><TR><TD><B>Title</B></TD><TD><B>Deliverables</B></TD><TD><B>Phase</B></TD><TD><B>RossStatus<B></TD></TR>";
                         response2.value.map((list) => {
-                            if (list.RossWay === "Yes") {
-                                if (list.FSObjType === 0) {
-                                    col = -1;
-                                    if (list.Phase === Phases.Initialization) col = 0;
-                                    else if (list.Phase === Phases.BasisDesign) col = 1;
-                                    else if (list.Phase === Phases.ChallengeDesign) col = 2;
-                                    else if (list.Phase === Phases.DetailledPlanning) col = 3;
-                                    else if (list.Phase === Phases.DesignOptimization) col = 4;
-                                    else if (list.Phase === Phases.FinalDesign) col = 5;
-                                    else if (list.Phase === Phases.Execution) col = 6;
-                                    else if (list.Phase === Phases.Learning) col = 7;
+                            // do not look at folders only files
+                            if (list.FSObjType === 0) {
+                                col = -1;
+                                if (list.Phase === Phases.Initialization) col = 0;
+                                else if (list.Phase === Phases.BasisDesign) col = 1;
+                                else if (list.Phase === Phases.ChallengeDesign) col = 2;
+                                else if (list.Phase === Phases.DetailledPlanning) col = 3;
+                                else if (list.Phase === Phases.DesignOptimization) col = 4;
+                                else if (list.Phase === Phases.FinalDesign) col = 5;
+                                else if (list.Phase === Phases.Execution) col = 6;
+                                else if (list.Phase === Phases.Learning) col = 7;
 
-                                    row = -1;
-                                    if (list.Deliverables === Deliverables.BorePlanning) row = 0;
-                                    else if (list.Deliverables === Deliverables.ContinuousTasks) row = 1;
-                                    else if (list.Deliverables === Deliverables.Milestones) row = 2;
-                                    else if (list.Deliverables === Deliverables.FormalRequirements) row = 3;
-                                    else if (list.Deliverables === Deliverables.OfficialApprovements) row = 4;
+                                row = -1;
+                                if (list.Deliverables === Deliverables.BorePlanning) row = 0;
+                                else if (list.Deliverables === Deliverables.ContinuousTasks) row = 1;
+                                else if (list.Deliverables === Deliverables.Milestones) row = 2;
+                                else if (list.Deliverables === Deliverables.FormalRequirements) row = 3;
+                                else if (list.Deliverables === Deliverables.OfficialApprovements) row = 4;
 
-                                    if (row !== -1 && col !== -1 && (list.Status1 === Status.Notstarted || list.Status1 === Status.Approved)) {
-                                        if (color[row][col] === 0) {
-                                            if (list.Status1 === Status.Notstarted) color[row][col] = 1;
-                                            else if (list.Status1 === Status.Approved) color[row][col] = 2;
-                                        }
-                                        else if (color[row][col] === 1) {
-                                            if (list.Status1 === Status.Approved) color[row][col] = 3;
-                                        }
-                                        else if (color[row][col] === 2) {
-                                            if (list.Status1 === Status.Notstarted) color[row][col] = 3;
-                                        }
-                                    } else {
-                                        htmlUncategorized += `<TR><TD><a href="${list.EncodedAbsUrl}">${list.FileRef.substr(list.FileRef.lastIndexOf('/') + 1)}</a></TD><TD>${list.Deliverables}</TD><TD>${list.Phase}</TD><TD>${list.Status1}</TD></TR>`;
+                                if (row !== -1 && col !== -1 && (list.RossStatus === RossStatus.Notstarted || list.RossStatus === RossStatus.Approved)) {
+                                    if (color[row][col] === 0) {
+                                        if (list.RossStatus === RossStatus.Notstarted) color[row][col] = 1;
+                                        else if (list.RossStatus === RossStatus.Approved) color[row][col] = 2;
                                     }
+                                    else if (color[row][col] === 1) {
+                                        if (list.RossStatus === RossStatus.Approved) color[row][col] = 3;
+                                    }
+                                    else if (color[row][col] === 2) {
+                                        if (list.RossStatus === RossStatus.Notstarted) color[row][col] = 3;
+                                    }
+                                } else {
+                                    htmlUncategorized += `<TR><TD><a href="${list.EncodedAbsUrl}">${list.FileRef.substr(list.FileRef.lastIndexOf('/') + 1)}</a></TD><TD>${list.Deliverables}</TD><TD>${list.Phase}</TD><TD>${list.RossStatus}</TD></TR>`;
                                 }
                             }
                         });
@@ -122,7 +131,7 @@ export default class RossWayWebpartWebPart extends BaseClientSideWebPart<IRossWa
 
                         let html: string = "";
 
-                        let headerRow: string = "<TABLE><TR><TD><H2>" + (this.properties.project || "None selected") + "</H2></TD>";
+                        let headerRow: string = "<TABLE><TR><TD><H2>" + this.properties.project + "</H2></TD>";
                         let headerColor: number[] = [0, 0, 0, 0, 0, 0, 0, 0];
                         let tableBody = "";
                         for (row = 0; row < 5; row++) {
@@ -181,7 +190,7 @@ export default class RossWayWebpartWebPart extends BaseClientSideWebPart<IRossWa
 
                         html += headerRow + tableBody + "</TABLE>" + htmlUncategorized;
 
-                        const listContainer: Element = this.domElement.querySelector("#spListItemContainer");
+                        const listContainer: Element = this.domElement.querySelector("#spRossWay");
                         listContainer.innerHTML = html;
                     });
             });
@@ -190,7 +199,7 @@ export default class RossWayWebpartWebPart extends BaseClientSideWebPart<IRossWa
     public render(): void {
         this.fetchDocumentsGuidAsync();
 
-        this.domElement.innerHTML = `<div class="${styles.rossWayWebpart}"><div id="spListItemContainer"></div><div id="spListContainer"></div></div>`;
+        this.domElement.innerHTML = `<div class="${styles.rossWayWebpart}"><div id="spRossWay"></div><div id="spListContainer"></div></div>`;
     }
 
     protected get dataVersion(): Version {
