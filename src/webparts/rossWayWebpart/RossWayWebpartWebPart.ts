@@ -52,7 +52,11 @@ export default class RossWayWebpartWebPart extends BaseClientSideWebPart<IRossWa
     private documentsGuid: string;
 
     private fetchLists(url: string): Promise<any> {
-        return this.context.spHttpClient.get(url, SPHttpClient.configurations.v1)
+        return this.context.spHttpClient.get(url, SPHttpClient.configurations.v1, {
+            headers: {
+                'Accept-Language': 'en-US,en'
+            }
+        })
             .then((response: SPHttpClientResponse) => {
                 return response.json();
             });
