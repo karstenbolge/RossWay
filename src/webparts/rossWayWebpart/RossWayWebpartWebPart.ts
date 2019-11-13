@@ -52,11 +52,11 @@ export default class RossWayWebpartWebPart extends BaseClientSideWebPart<IRossWa
     private documentsGuid: string;
 
     private fetchLists(url: string): Promise<any> {
-        return this.context.spHttpClient.get(url, SPHttpClient.configurations.v1, {
+        return this.context.spHttpClient.get(url, SPHttpClient.configurations.v1 /*, {
             headers: {
                 'Accept-Language': 'en-US,en'
             }
-        })
+        }*/)
             .then((response: SPHttpClientResponse) => {
                 return response.json();
             });
@@ -150,11 +150,11 @@ export default class RossWayWebpartWebPart extends BaseClientSideWebPart<IRossWa
                                 if (row === 0) headerColor[col] = color[row][col];
 
                                 if (color[row][col] === 0) {
-                                    tableBody += "<TD class=" + styles.tdgrey + "> </TD>";
+                                    tableBody += "<TD class=" + styles.tdred + "> </TD>";
                                     // no document does not change header color
                                 }
                                 else if (color[row][col] === 1) {
-                                    tableBody += "<TD class=" + styles.tdgrey + "> </TD>";
+                                    tableBody += "<TD class=" + styles.tdred + "> </TD>";
                                     if (headerColor[col] === 0) headerColor[col] = 1;
                                     else if (headerColor[col] == 2) headerColor[col] = 3;
                                 }
@@ -173,21 +173,23 @@ export default class RossWayWebpartWebPart extends BaseClientSideWebPart<IRossWa
                         }
 
                         for (col = 0; col < 8; col++) {
-                            if (headerColor[col] === 0) headerRow += "<TD class=" + styles.tdgrey + ">";
-                            else if (headerColor[col] === 1) headerRow += "<TD class=" + styles.tdgrey + ">";
+                            /* no coloring of headlines as first assumed, keeping the code if needed again 
+                            if (headerColor[col] === 0) headerRow += "<TD class=" + styles.tdred + ">";
+                            else if (headerColor[col] === 1) headerRow += "<TD class=" + styles.tdred + ">";
                             else if (headerColor[col] === 2) headerRow += "<TD class=" + styles.tdgreen + ">";
-                            else if (headerColor[col] === 3) headerRow += "<TD class=" + styles.tdorange + ">";
+                            else if (headerColor[col] === 3) headerRow += "<TD class=" + styles.tdorange + ">"; */
 
-                            if (col === 0) headerRow += Phases.Initialization;
-                            else if (col === 1) headerRow += Phases.BasisDesign;
-                            else if (col === 2) headerRow += Phases.ChallengeDesign;
-                            else if (col === 3) headerRow += Phases.DetailledPlanning;
-                            else if (col === 4) headerRow += Phases.DesignOptimization;
-                            else if (col === 5) headerRow += Phases.FinalDesign;
-                            else if (col === 6) headerRow += Phases.Execution;
-                            else if (col === 7) headerRow += Phases.Learning;
+                            headerRow += "<TD class=" + styles.tdblue + "><div style=\"width:70px\">";
+                            if (col === 0) headerRow += Phases.Initialization.replace(" ", "<BR>");
+                            else if (col === 1) headerRow += Phases.BasisDesign.replace(" ", "<BR>");
+                            else if (col === 2) headerRow += Phases.ChallengeDesign.replace(" ", "<BR>");
+                            else if (col === 3) headerRow += Phases.DetailledPlanning.replace(" ", "<BR>");
+                            else if (col === 4) headerRow += Phases.DesignOptimization.replace(" ", "<BR>");
+                            else if (col === 5) headerRow += Phases.FinalDesign.replace(" ", "<BR>");
+                            else if (col === 6) headerRow += Phases.Execution.replace(" ", "<BR>");
+                            else if (col === 7) headerRow += Phases.Learning.replace(" ", "<BR>");
 
-                            headerRow += "</TD>";
+                            headerRow += "</div></TD>";
                         }
 
                         headerRow += "</TR>";
