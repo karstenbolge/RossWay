@@ -39,7 +39,7 @@ enum RossDeliverables {
     Milestones = "Milestones",
     Checklists = "Checklists",
     LegislativeRequirements = "Legislative Requirements",
-    OfficialApprovements = "Official Approvements",
+    OfficialApprovals = "Official Approvals",
 }
 
 enum RossStatus {
@@ -65,7 +65,7 @@ export default class RossWayWebpartWebPart extends BaseClientSideWebPart<IRossWa
     }
 
     private async fetchProjects(): Promise<IPropertyPaneDropdownOption[]> {
-        const response = await this.fetchLists(this.context.pageContext.web.absoluteUrl + "/_api/Web/Lists(guid'" + this.documentsGuid + "')/Items?$select=*,EncodedAbsUrl,FileRef,Id,RossDeliverables,RossPhase&$filter=FSObjType eq 1");
+        const response = await this.fetchLists(this.context.pageContext.web.absoluteUrl + "/_api/Web/Lists(guid'" + this.documentsGuid + "')/Items?$select=*,EncodedAbsUrl,FileRef,Id&$filter=FSObjType eq 1");
         var options: Array<IPropertyPaneDropdownOption> = new Array<IPropertyPaneDropdownOption>();
         response.value.map((list: ISPProject) => {
             options.push({ key: list.FileRef.substr(list.FileRef.lastIndexOf('/') + 1), text: list.FileRef.substr(list.FileRef.lastIndexOf('/') + 1) });
@@ -117,7 +117,7 @@ export default class RossWayWebpartWebPart extends BaseClientSideWebPart<IRossWa
                                 else if (list.RossDeliverables === RossDeliverables.Milestones) row = 3;
                                 else if (list.RossDeliverables === RossDeliverables.Checklists) row = 4;
                                 else if (list.RossDeliverables === RossDeliverables.LegislativeRequirements) row = 5;
-                                else if (list.RossDeliverables === RossDeliverables.OfficialApprovements) row = 6;
+                                else if (list.RossDeliverables === RossDeliverables.OfficialApprovals) row = 6;
 
                                 // Any status is now valid
                                 if (row !== -1 && col !== -1 /*&& (list.RossStatus === RossStatus.Notstarted || list.RossStatus === RossStatus.Approved)*/) {
@@ -152,7 +152,7 @@ export default class RossWayWebpartWebPart extends BaseClientSideWebPart<IRossWa
                             if (row === 3) tableBody += RossDeliverables.Milestones;
                             if (row === 4) tableBody += RossDeliverables.Checklists;
                             if (row === 5) tableBody += RossDeliverables.LegislativeRequirements;
-                            if (row === 6) tableBody += RossDeliverables.OfficialApprovements;
+                            if (row === 6) tableBody += RossDeliverables.OfficialApprovals;
                             tableBody += "</TD>";
                             for (col = 0; col < 8; col++) {
                                 if (row === 0) headerColor[col] = color[row][col];
