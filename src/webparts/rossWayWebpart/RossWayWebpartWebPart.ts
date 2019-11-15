@@ -21,7 +21,7 @@ interface ISPProject {
     Id: string;
 }
 
-enum Phases {
+enum RossPhases {
     Initialization = "Initialization",
     BasisDesign = "Basis Design",
     ChallengeDesign = "Challenge Design",
@@ -32,11 +32,13 @@ enum Phases {
     Learning = "Learning",
 }
 
-enum Deliverables {
-    BorePlanning = "Bore Planning",
+enum RossDeliverables {
+    DrillingProject = "Drilling Project",
     ContinuousTasks = "Continuous Tasks",
+    Approvals = "Approvals",
     Milestones = "Milestones",
-    FormalRequirements = "Formal Requirements",
+    Checklists = "Checklists",
+    LegislativeRequirements = "Legislative Requirements",
     OfficialApprovements = "Official Approvements",
 }
 
@@ -63,7 +65,7 @@ export default class RossWayWebpartWebPart extends BaseClientSideWebPart<IRossWa
     }
 
     private async fetchProjects(): Promise<IPropertyPaneDropdownOption[]> {
-        const response = await this.fetchLists(this.context.pageContext.web.absoluteUrl + "/_api/Web/Lists(guid'" + this.documentsGuid + "')/Items?$select=*,EncodedAbsUrl,FileRef,Id,Deliverables,Phase&$filter=FSObjType eq 1");
+        const response = await this.fetchLists(this.context.pageContext.web.absoluteUrl + "/_api/Web/Lists(guid'" + this.documentsGuid + "')/Items?$select=*,EncodedAbsUrl,FileRef,Id,RossDeliverables,RossPhase&$filter=FSObjType eq 1");
         var options: Array<IPropertyPaneDropdownOption> = new Array<IPropertyPaneDropdownOption>();
         response.value.map((list: ISPProject) => {
             options.push({ key: list.FileRef.substr(list.FileRef.lastIndexOf('/') + 1), text: list.FileRef.substr(list.FileRef.lastIndexOf('/') + 1) });
@@ -83,51 +85,55 @@ export default class RossWayWebpartWebPart extends BaseClientSideWebPart<IRossWa
                     return;
                 }
 
-                this.fetchLists(this.context.pageContext.web.absoluteUrl + "/_api/Web/Lists(guid'" + this.documentsGuid + "')/Items?$select=FSObjType,EncodedAbsUrl,FileRef,Id,Deliverables,Phase,RossStatus,RossWay&$filter=startswith(FileRef, '/sites/RossManagement/Delte dokumenter/" + this.properties.project + "/') and (RossWay eq 'Yes')")
+                this.fetchLists(this.context.pageContext.web.absoluteUrl + "/_api/Web/Lists(guid'" + this.documentsGuid + "')/Items?$select=FSObjType,EncodedAbsUrl,FileRef,Id,RossDeliverables,RossPhase,RossStatus,RossWay&$filter=startswith(FileRef, '/sites/RossManagement/Delte dokumenter/" + this.properties.project + "/') and (RossWay eq 'Yes' or RossWay eq 'Ja' or RossWay eq 'True')")
                     .then((response2) => {
                         if (response2.error) {
                             this.domElement.querySelector("#spRossWay").innerHTML = "<i>" + response2.error.message + "</I>";
                             return;
                         }
 
-                        let color: number[][] = [[0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0]];
+                        let color: number[][] = [[0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0]];
                         let col: number;
                         let row: number;
 
-                        let htmlUncategorized: string = "<BR><H2>RossWay Uncategorized Docuements</H2><TABLE><TR><TD><B>Title</B></TD><TD><B>Deliverables</B></TD><TD><B>Phase</B></TD><TD><B>RossStatus<B></TD></TR>";
+                        let htmlUncategorized: string = "<BR><H2>RossWay Uncategorized Docuements</H2><TABLE><TR><TD><B>Title</B></TD><TD><B>RossDeliverables</B></TD><TD><B>RossPhase</B></TD><TD><B>RossStatus<B></TD></TR>";
                         response2.value.map((list) => {
                             // do not look at folders only files
                             if (list.FSObjType === 0) {
                                 col = -1;
-                                if (list.Phase === Phases.Initialization) col = 0;
-                                else if (list.Phase === Phases.BasisDesign) col = 1;
-                                else if (list.Phase === Phases.ChallengeDesign) col = 2;
-                                else if (list.Phase === Phases.DetailledPlanning) col = 3;
-                                else if (list.Phase === Phases.DesignOptimization) col = 4;
-                                else if (list.Phase === Phases.FinalDesign) col = 5;
-                                else if (list.Phase === Phases.Execution) col = 6;
-                                else if (list.Phase === Phases.Learning) col = 7;
+                                if (list.RossPhase === RossPhases.Initialization) col = 0;
+                                else if (list.RossPhase === RossPhases.BasisDesign) col = 1;
+                                else if (list.RossPhase === RossPhases.ChallengeDesign) col = 2;
+                                else if (list.RossPhase === RossPhases.DetailledPlanning) col = 3;
+                                else if (list.RossPhase === RossPhases.DesignOptimization) col = 4;
+                                else if (list.RossPhase === RossPhases.FinalDesign) col = 5;
+                                else if (list.RossPhase === RossPhases.Execution) col = 6;
+                                else if (list.RossPhase === RossPhases.Learning) col = 7;
 
                                 row = -1;
-                                if (list.Deliverables === Deliverables.BorePlanning) row = 0;
-                                else if (list.Deliverables === Deliverables.ContinuousTasks) row = 1;
-                                else if (list.Deliverables === Deliverables.Milestones) row = 2;
-                                else if (list.Deliverables === Deliverables.FormalRequirements) row = 3;
-                                else if (list.Deliverables === Deliverables.OfficialApprovements) row = 4;
+                                if (list.RossDeliverables === RossDeliverables.DrillingProject) row = 0;
+                                else if (list.RossDeliverables === RossDeliverables.ContinuousTasks) row = 1;
+                                else if (list.RossDeliverables === RossDeliverables.Approvals) row = 2;
+                                else if (list.RossDeliverables === RossDeliverables.Milestones) row = 3;
+                                else if (list.RossDeliverables === RossDeliverables.Checklists) row = 4;
+                                else if (list.RossDeliverables === RossDeliverables.LegislativeRequirements) row = 5;
+                                else if (list.RossDeliverables === RossDeliverables.OfficialApprovements) row = 6;
 
-                                if (row !== -1 && col !== -1 && (list.RossStatus === RossStatus.Notstarted || list.RossStatus === RossStatus.Approved)) {
+                                // Any status is now valid
+                                if (row !== -1 && col !== -1 /*&& (list.RossStatus === RossStatus.Notstarted || list.RossStatus === RossStatus.Approved)*/) {
                                     if (color[row][col] === 0) {
                                         if (list.RossStatus === RossStatus.Notstarted) color[row][col] = 1;
                                         else if (list.RossStatus === RossStatus.Approved) color[row][col] = 2;
+                                        else color[row][col] = 3;
                                     }
                                     else if (color[row][col] === 1) {
-                                        if (list.RossStatus === RossStatus.Approved) color[row][col] = 3;
+                                        if (list.RossStatus !== RossStatus.Notstarted) color[row][col] = 3;
                                     }
                                     else if (color[row][col] === 2) {
-                                        if (list.RossStatus === RossStatus.Notstarted) color[row][col] = 3;
+                                        if (list.RossStatus !== RossStatus.Approved) color[row][col] = 3;
                                     }
                                 } else {
-                                    htmlUncategorized += `<TR><TD><a href="${list.EncodedAbsUrl}">${list.FileRef.substr(list.FileRef.lastIndexOf('/') + 1)}</a></TD><TD>${list.Deliverables}</TD><TD>${list.Phase}</TD><TD>${list.RossStatus}</TD></TR>`;
+                                    htmlUncategorized += `<TR><TD><a href="${list.EncodedAbsUrl}">${list.FileRef.substr(list.FileRef.lastIndexOf('/') + 1)}</a></TD><TD>${list.RossDeliverables}</TD><TD>${list.RossPhase}</TD><TD>${list.RossStatus}</TD></TR>`;
                                 }
                             }
                         });
@@ -138,13 +144,15 @@ export default class RossWayWebpartWebPart extends BaseClientSideWebPart<IRossWa
                         let headerRow: string = "<TABLE><TR><TD><H2>" + this.properties.project + "</H2></TD>";
                         let headerColor: number[] = [0, 0, 0, 0, 0, 0, 0, 0];
                         let tableBody = "";
-                        for (row = 0; row < 5; row++) {
+                        for (row = 0; row < 7; row++) {
                             tableBody += "<TR><TD class=" + styles.tdblue + ">";
-                            if (row === 0) tableBody += Deliverables.BorePlanning;
-                            if (row === 1) tableBody += Deliverables.ContinuousTasks;
-                            if (row === 2) tableBody += Deliverables.Milestones;
-                            if (row === 3) tableBody += Deliverables.FormalRequirements;
-                            if (row === 4) tableBody += Deliverables.OfficialApprovements;
+                            if (row === 0) tableBody += RossDeliverables.DrillingProject;
+                            if (row === 1) tableBody += RossDeliverables.ContinuousTasks;
+                            if (row === 2) tableBody += RossDeliverables.Approvals;
+                            if (row === 3) tableBody += RossDeliverables.Milestones;
+                            if (row === 4) tableBody += RossDeliverables.Checklists;
+                            if (row === 5) tableBody += RossDeliverables.LegislativeRequirements;
+                            if (row === 6) tableBody += RossDeliverables.OfficialApprovements;
                             tableBody += "</TD>";
                             for (col = 0; col < 8; col++) {
                                 if (row === 0) headerColor[col] = color[row][col];
@@ -180,14 +188,14 @@ export default class RossWayWebpartWebPart extends BaseClientSideWebPart<IRossWa
                             else if (headerColor[col] === 3) headerRow += "<TD class=" + styles.tdorange + ">"; */
 
                             headerRow += "<TD class=" + styles.tdblue + "><div style=\"width:70px\">";
-                            if (col === 0) headerRow += Phases.Initialization.replace(" ", "<BR>");
-                            else if (col === 1) headerRow += Phases.BasisDesign.replace(" ", "<BR>");
-                            else if (col === 2) headerRow += Phases.ChallengeDesign.replace(" ", "<BR>");
-                            else if (col === 3) headerRow += Phases.DetailledPlanning.replace(" ", "<BR>");
-                            else if (col === 4) headerRow += Phases.DesignOptimization.replace(" ", "<BR>");
-                            else if (col === 5) headerRow += Phases.FinalDesign.replace(" ", "<BR>");
-                            else if (col === 6) headerRow += Phases.Execution.replace(" ", "<BR>");
-                            else if (col === 7) headerRow += Phases.Learning.replace(" ", "<BR>");
+                            if (col === 0) headerRow += RossPhases.Initialization.replace(" ", "<BR>");
+                            else if (col === 1) headerRow += RossPhases.BasisDesign.replace(" ", "<BR>");
+                            else if (col === 2) headerRow += RossPhases.ChallengeDesign.replace(" ", "<BR>");
+                            else if (col === 3) headerRow += RossPhases.DetailledPlanning.replace(" ", "<BR>");
+                            else if (col === 4) headerRow += RossPhases.DesignOptimization.replace(" ", "<BR>");
+                            else if (col === 5) headerRow += RossPhases.FinalDesign.replace(" ", "<BR>");
+                            else if (col === 6) headerRow += RossPhases.Execution.replace(" ", "<BR>");
+                            else if (col === 7) headerRow += RossPhases.Learning.replace(" ", "<BR>");
 
                             headerRow += "</div></TD>";
                         }
