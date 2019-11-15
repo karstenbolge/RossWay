@@ -17,22 +17,22 @@
     border-radius: 10px;
     background: goldenrod;
     padding: 10px;
-}
+  }
 
-.tdred {
+  .tdred {
     border-radius: 10px;
     background: red;
     padding: 10px;
     color:white;
-}
+  }
 
-.tdblue {
+  .tdblue {
     border-radius: 10px;
     background: blue;
     padding: 10px;
     color:white;
     text-align: center;
-}
+  }
 
   .row {
     @include ms-Grid-row;
