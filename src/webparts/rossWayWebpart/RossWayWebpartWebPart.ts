@@ -85,7 +85,7 @@ export default class RossWayWebpartWebPart extends BaseClientSideWebPart<IRossWa
                     return;
                 }
 
-                this.fetchLists(this.context.pageContext.web.absoluteUrl + "/_api/Web/Lists(guid'" + this.documentsGuid + "')/Items?$select=FSObjType,EncodedAbsUrl,FileRef,Id,RossDeliverables,RossPhase,RossStatus,RossWay&$filter=startswith(FileRef, '/sites/RossManagement/Delte dokumenter/" + this.properties.project + "/') and (RossWay eq 'Yes' or RossWay eq 'Ja' or RossWay eq 'True')")
+                this.fetchLists(this.context.pageContext.web.absoluteUrl + "/_api/Web/Lists(guid'" + this.documentsGuid + "')/Items?$select=FSObjType,EncodedAbsUrl,FileRef,Id,RossDeliverables,RossPhase,RossStatus,RossWay&$filter=startswith(FileRef, '/sites/RossWay/Shared dokuments/" + this.properties.project + "/') and (RossWay eq 'Yes' or RossWay eq 'Ja' or RossWay eq 'True')")
                     .then((response2) => {
                         if (response2.error) {
                             this.domElement.querySelector("#spRossWay").innerHTML = "<i>" + response2.error.message + "</I>";
