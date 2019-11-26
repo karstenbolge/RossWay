@@ -3,7 +3,7 @@
     "solution": {
         "name": "ross-way-webpart-client-side-solution",
         "id": "695404b8-01cd-4f9f-8275-8a46f3dbe744",
-        "version": "1.0.3.0",
+        "version": "1.0.4.0",
         "includeClientSideAssets": true,
         "skipFeatureDeployment": true,
         "isDomainIsolated": false
