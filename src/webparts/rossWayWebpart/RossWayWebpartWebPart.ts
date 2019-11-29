@@ -96,7 +96,7 @@ export default class RossWayWebpartWebPart extends BaseClientSideWebPart<IRossWa
                         let col: number;
                         let row: number;
 
-                        let htmlUncategorized: string = "<BR><H2>RossWay Uncategorized Docuements</H2><TABLE><TR><TD><B>Title</B></TD><TD><B>RossDeliverables</B></TD><TD><B>RossPhase</B></TD><TD><B>RossStatus<B></TD></TR>";
+                        let htmlUncategorized: string = "<BR><H2>RossWay Uncategorized Documents</H2><TABLE><TR><TD><B>Title</B></TD><TD><B>RossDeliverables</B></TD><TD><B>RossPhase</B></TD><TD><B>RossStatus<B></TD></TR>";
                         response2.value.map((list) => {
                             // do not look at folders only files
                             if (list.FSObjType === 0) {
